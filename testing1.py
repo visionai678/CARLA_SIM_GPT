@@ -677,37 +677,50 @@ class FadingText(object):
 
 
 class HelpText(object):
-    """Helper class to handle text output using pygame"""
-    def __init__(self, font, width, height):
-        lines = __doc__.split('\n')
-        self.font = font
-        self.line_space = 18
-        self.dim = (780, len(lines) * self.line_space + 12)
-        self.pos = (0.5 * width - 0.5 * self.dim[0], 0.5 * height - 0.5 * self.dim[1])
-        self.seconds_left = 0
-        self.surface = pygame.Surface(self.dim)
-        self.surface.fill((0, 0, 0, 0))
-        for n, line in enumerate(lines):
-            text_texture = self.font.render(line, True, (255, 255, 255))
-            self.surface.blit(text_texture, (22, n * self.line_space))
-            self._render = False
-        self.surface.set_alpha(220)
-
-    def toggle(self):
-        self._render = not self._render
-
-    def render(self, display):
-        if self._render:
-            display.blit(self.surface, self.pos)
-
-
-# ==============================================================================
-# -- CollisionSensor -----------------------------------------------------------
+    # ==============================================================================
+# -- game_loop() ---------------------------------------------------------------
 # ==============================================================================
 
+def game_loop(args):
+    pygame.init()
+    pygame.font.init()
+    world = None
 
-class CollisionSensor(object):
-    def __init__(self, parent_actor, hud):
+    try:
+        client = carla.Client(args.host, args.port)
+        client.set_timeout(2.0)
+
+        display = pygame.display.set_mode(
+            (args.width, args.height),
+            pygame.HWSURFACE | pygame.DOUBLEBUF)
+
+        hud = HUD(args.width, args.height)
+        world = World(client.get_world(), hud, args)
+        controller = KeyboardControl(world, args.autopilot)
+
+        clock = pygame.time.Clock()
+        while True:
+            clock.tick_busy_loop(60)
+            if controller.parse_events(client, world, clock):
+                return
+            world.tick(clock)
+
+            # Capture images if recording is enabled
+            if world.recording_enabled:
+                world.camera_manager.capture_image()  # Capture images if recording is enabled
+
+            world.render(display)
+            pygame.display.flip()
+
+    finally:
+        if (world and world.recording_enabled):
+            client.stop_recorder()
+
+        if world is not None:
+            world.destroy()
+
+        pygame.quit()
+
         self.sensor = None
         self.history = []
         self._parent = parent_actor
