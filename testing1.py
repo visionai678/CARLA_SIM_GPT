@@ -318,7 +318,7 @@ class KeyboardControl(object):
                     world.camera_manager.toggle_camera()
                 elif event.key == K_c and pygame.key.get_mods() & KMOD_SHIFT:
                     world.next_weather(reverse=True)
-                elif event.key == K_c:
+                                elif event.key == K_c:
                     world.next_weather()
                 elif event.key == K_g:
                     world.toggle_radar()
@@ -338,6 +338,9 @@ class KeyboardControl(object):
                 elif event.key > K_0 and event.key <= K_9:
                     world.camera_manager.set_sensor(event.key - 1 - K_0)
                 elif event.key == K_r and not (pygame.key.get_mods() & KMOD_CTRL):
+                    image = image.convert(carla.ColorConverter.Raw)
+                    self.save_image(image)
+
                     world.camera_manager.toggle_recording()
                 elif event.key == K_r and (pygame.key.get_mods() & KMOD_CTRL):
                     if (world.recording_enabled):
