@@ -307,17 +307,9 @@ class KeyboardControl(object):
                     if self._autopilot_enabled:
                         world.player.set_autopilot(False)
                         world.restart()
-                        world.player.set_autopilot(True)
-                    else:
-                        world.restart()
-                elif event.key == K_F1:
-                    world.hud.toggle_info()
-                elif event.key == K_v and pygame.key.get_mods() & KMOD_SHIFT:
-                    world.next_map_layer(reverse=True)
-                elif event.key == K_v:
-                    world.next_map_layer()
-                elif event.key == K_b and pygame.key.get_mods() & KMOD_SHIFT:
-                    world.load_map_layer(unload=True)
+                      if event.key == K_s:  # Press 's' to save image
+    world.camera_manager.save_image()
+
                 elif event.key == K_b:
                     world.load_map_layer()
                 elif event.key == K_h or (event.key == K_SLASH and pygame.key.get_mods() & KMOD_SHIFT):
